@@ -21,45 +21,53 @@ var music = new Audio('crawling.mp3');
 function startGame() {
   music.play();  
   setTimeout(function() {
-
     myGamePieceKeyA = new componentStatic(150, 150, "red", 100, window.innerHeight - 200);
     myGamePieceKeyS = new componentStatic(150, 150, "blue", 350, window.innerHeight - 200);
     myGamePieceKeyJ = new componentStatic(150, 150, "green", 600, window.innerHeight - 200);
     myGamePieceKeyK = new componentStatic(150, 150, "pink", 850, window.innerHeight - 200);
     myGamePieceKeyL = new componentStatic(150, 150, "yellow", 1100, window.innerHeight - 200);
-  
-    myGameKeyGoalA = new componentMove(150, 75, "red", 100, 100, 5, "a");
-    myGameKeyGoalS = new componentMove(150, 75, "blue", 350, 100, 5, "s");
-    myGameKeyGoalJ = new componentMove(150, 75, "green", 600, 100, 5, "j");
-    myGameKeyK = new componentMove(150, 75, "pink", 850, 100, 5, "k");
-    myGameKeyGoalL = new componentMove(150, 75, "yellow", 1100, 100, 5, "l");
+
+    myGameKeyGoalA = new componentMove(150, 75, "red", 100, 100, 12, "a");
+    myGameKeyGoalS = new componentMove(150, 75, "blue", 350, 100, 12, "s");
+    myGameKeyGoalJ = new componentMove(150, 75, "green", 600, 100, 12, "j");
+    myGameKeyGoalK = new componentMove(150, 75, "pink", 850, 100, 12, "k");
+    myGameKeyGoalL = new componentMove(150, 75, "yellow", 1100, 100, 12, "l");
 
     setInterval(updateNotes, 600);
     myGameArea.start();
-  }, 4300);
+  }, 3600);
 }
 
-
 function updateNotes() {
-  note = mapMusical[indexNotes];
+  if (indexNotes < mapMusical.length) {
+    note = mapMusical[indexNotes];
 
-  if (note[0] === 1) myGameKeyGoalA.newPos();
-  if (note[1] === 1) myGameKeyGoalS.newPos();
-  if (note[2] === 1) myGameKeyGoalJ.newPos();
-  if (note[3] === 1) myGameKeyGoalK.newPos();
-  if (note[4] === 1) myGameKeyGoalL.newPos();
+    if (note[0] === 1) myGameKeyGoalA.newPos();
+    if (note[1] === 1) myGameKeyGoalS.newPos();
+    if (note[2] === 1) myGameKeyGoalJ.newPos();
+    if (note[3] === 1) myGameKeyGoalK.newPos();
+    if (note[4] === 1) myGameKeyGoalL.newPos();
 
-  indexNotes++;
+    indexNotes++;
+  } else {
+    indexNotes = 0;
+  }
 }
 
 var myGameArea = {
-  canvas: document.getElementById("myCanvas"),
+  canvas: document.createElement("canvas"),
   start: function () {
+    var scoreHeader = document.createElement("h1");
+    scoreHeader.textContent = "Score: 0";
+    scoreHeader.style.textAlign = "center";
+    scoreHeader.style.fontFamily = "Arial, sans-serif";
+    scoreHeader.style.marginTop = "20px";
+    document.body.appendChild(scoreHeader);
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.context = this.canvas.getContext("2d");
-    document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-    this.interval = setInterval(updateGameArea, 10);
+    document.body.appendChild(this.canvas); 
+    this.interval = setInterval(updateGameArea, 18);
     window.addEventListener("keydown", function (e) {
       myGameArea.key = e.key;
     });
@@ -86,23 +94,19 @@ function componentMove(width, height, color, x, y, gravity, key) {
   this.width = width;
   this.height = height;
   this.color = color;
-  this.initialColor = color;
   this.x = x;
   this.y = y;
   this.gravity = gravity;
   this.key = key;
   this.active = false;
-
   this.update = function () {
     const ctx = myGameArea.context;
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
   };
-
   this.newPos = function () {
     this.active = true;
   };
-
   this.move = function () {
     if (this.active) {
       this.y += this.gravity;
@@ -110,28 +114,23 @@ function componentMove(width, height, color, x, y, gravity, key) {
         this.resetPosition();
       }
     }
-  };
-
+  };  
   this.checkCollision = function () {
-    if (this.active && myGameArea.key === this.key && this.y + this.height >= window.innerHeight - 200) {
+    if (myGameArea.key === this.key && this.y + this.height >= window.innerHeight - 200) {
       score++;
       this.resetPosition();
     }
   };
-
   this.resetPosition = function() {
-    this.y = -75;
+    this.y = 100;
     this.active = false;
-    this.color = this.initialColor;
-    this.createNewRect();
   };
+}
 
-  this.createNewRect = function() {
-    if (!this.active) {
-      this.y = -75;
-      this.active = true;
-    }
-  };
+var score = 0;
+
+function updateScore() {
+  document.querySelector("h1").textContent = "Score: " + score;
 }
 
 function updateGameArea() {
@@ -165,4 +164,7 @@ function updateGameArea() {
   myGameKeyGoalL.move();
   myGameKeyGoalL.checkCollision();
   myGameKeyGoalL.update();
+
+  updateScore();
 }
+
